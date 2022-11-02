@@ -1,0 +1,4 @@
+#!/usr/bin/rm
+# Nothing much happens when you run this... except that the file disappears.
+
+echo "Nothing much happens when you run this... except that the file disappears before this even line prints."
