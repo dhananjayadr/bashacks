@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 if ! pacman -Qs python3 > /dev/null; then
-    printf "python3 is not available in the system...\n\n"
+    printf "python3 is not available in the system.\n\n"
     exit $!
 fi
 
