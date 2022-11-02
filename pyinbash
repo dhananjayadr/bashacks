@@ -1,0 +1,21 @@
+#!/usr/bin/bash
+
+if ! pacman -Qs python3 > /dev/null; then
+    printf "python3 is not available in the system...\n\n"
+    exit $!
+fi
+
+main() {
+	read -r -d '' script <<-"----EOF"
+	import sys
+	
+	def main(arg1, arg2):
+	   print(f'pyinbash arguments: arg1 = {arg1}, arg2 = {arg2}')
+	
+	main(sys.argv[1], sys.argv[2])
+----EOF
+
+python3 -c "$script" $*
+}
+
+main $@
