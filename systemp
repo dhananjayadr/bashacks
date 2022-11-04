@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+
+temp=$(($(cat /sys/class/thermal/thermal_zone0/temp)/1000))
+
+function writelog() {
+	file="$HOME/temp.txt"
+	if [[ ! -f "$file" ]]; then touch "$file"; fi
+	echo "$1" >> "$file"
+}
+
+writelog "$(date): CPU temp - $temp'c" 
+
+if [[ $temp -gt 75 ]]; then  writelog "shutdown the system"; shutdown -h now"; fi
