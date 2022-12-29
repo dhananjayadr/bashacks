@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#if [ -d "logs" ]; then rm -Rf logs; mkdir logs; else mkdir logs; fi
+
+adb logcat -v time | while read line
+do
+    echo $line |  grep -i "PINGREQ"  &> /dev/null
+    if [ "$?" -eq "0" ]; then
+        echo $line >> $USER/mqttping.log 2>&1
+    fi
+done
