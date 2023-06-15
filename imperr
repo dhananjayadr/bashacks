@@ -1,0 +1,73 @@
+#!/bin/bash
+
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+file_path="$1"
+project_directory="$2"
+
+check_imports() {
+    local script_path=$1
+    local script_dir=$(dirname "$script_path")
+
+    echo "Checking imports for $script_path..."
+
+    imports=$(grep "^import\|^from" "$script_path")
+
+    while IFS= read -r line; do
+        import_statement=$(echo "$line" | tr -d '\r')
+        package=$(echo "$import_statement" | awk '{print $2}')
+
+        if [ "${package: -1}" == "*" ]; then
+            package="${package::-1}"
+        fi
+
+        # Check if the package is installed using pip
+        python3 -c "import $package" &> /dev/null
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}$package is installed via pip.${NC}"
+            continue
+        fi
+
+        # Check if the package is part of the standard library
+        python3 -c "import $package" &> /dev/null
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}$package is part of the standard library.${NC}"
+            continue
+        fi
+
+        module_path=$(python3 -c "import os.path; import importlib; module = importlib.import_module('$package'); print(os.path.abspath(module.__file__))" 2>/dev/null)
+
+        if [ -z "$module_path" ]; then
+            # Try to resolve relative import
+            relative_path="${package#.*}"
+            relative_path="${relative_path//./\/}.py"
+            module_path=$(find "$script_dir" -name "$relative_path" -print | head -n 1)
+            
+            if [ -z "$module_path" ]; then
+                # Try to resolve relative import from the project directory
+                module_path=$(find "$project_directory" -name "$relative_path" -print | head -n 1)
+            fi
+        fi
+
+        if [ -z "$module_path" ]; then
+            # Check in the project directory with subdirectories (packages)
+            module_path=$(find "$project_directory" -type f -path "*/$package.py" -print | head -n 1)
+
+            if [ -z "$module_path" ]; then
+                # Check in the project directory with subdirectories (packages) for relative imports
+                package_path="${package//./\/}"
+                module_path=$(find "$project_directory" -type f -path "*/$package_path.py" -print | head -n 1)
+            fi
+        fi
+
+        if [ -z "$module_path" ]; then
+            echo -e "${RED}Import error: $package${NC}"
+        else
+            echo -e "${GREEN}$package is a custom module located at: $module_path${NC}"
+        fi
+    done <<< "$imports"
+}
+
+check_imports "$file_path"
