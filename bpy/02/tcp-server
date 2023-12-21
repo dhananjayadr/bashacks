@@ -1,0 +1,14 @@
+#!/bin/bash
+
+bind_ip="0.0.0.0"
+bind_port=9999
+
+echo "[*] Listening on $bind_ip:$bind_port"
+
+while true; do
+    {
+        request=$(nc -l "$bind_ip" "$bind_port")
+        echo "[*] Received: $request"
+        echo -e "ACK!" | nc "$bind_ip" "$bind_port"
+    }
+done
