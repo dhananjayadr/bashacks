@@ -1,0 +1,13 @@
+#!/bin/bash
+
+server_ip="127.0.0.1"
+server_port=9999
+message="Hello, server! How are you doing?"
+
+echo "Connecting to $server_ip:$server_port..."
+
+# Send message to server and capture response
+response=$(echo -e "$message" | nc "$server_ip" "$server_port" 2>&1)
+
+# Print the server's response
+echo "Server response: $response"
